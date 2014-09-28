@@ -13,7 +13,7 @@ void get_domain(char *address, char **domain, char **destination);
 
 int main(int argc, char** argv){
     char buffer[1025];
-    int portNum, sockfd = 0, ok;
+    int portNum, sockfd = 0;
     struct sockaddr_in serv_addr;
     char *domain,*destination;
     
@@ -28,8 +28,24 @@ int main(int argc, char** argv){
     
     hostname_to_ip(domain, &serv_addr);
     
+    printf("%s resolved %s\n", domain, inet_ntoa(serv_addr.sin_addr));
+    printf("Connecting to server\n");
     
+    if((sockfd = socket(AF_INET, SOCK_STREAM, 0))< 0)
+    {
+      printf("\n Error : Could not create socket \n");
+      return 1;
+    }
+    if(connect(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0){
+        printf("ERROR cannot connect to server\n");
+        return 1;
+    }
     
+    printf("Connected\n");
+    
+    printf("Disconnecting...\n");
+    close(sockfd);
+    printf("Disconnected\n");
     
     return 0;
 }
@@ -85,7 +101,6 @@ void get_domain(char *address, char **domain, char **destination){
         }
     }
     dom = (char*)malloc(sizeof(char)*(i+1));
-    printf("%d\n",i);
     if(i == length){
         strcpy(dom,address);
         dest = (char*)malloc(sizeof(char)*2);
