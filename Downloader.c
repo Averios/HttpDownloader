@@ -9,12 +9,13 @@
 #include <netdb.h>
 
 int hostname_to_ip(char* domain, struct sockaddr_in *_addr);
-int get_domain(char *address, char *domain, char *destionation);
+void get_domain(char *address, char **domain, char **destination);
 
 int main(int argc, char** argv){
     char buffer[1025];
     int portNum, sockfd = 0, ok;
     struct sockaddr_in serv_addr;
+    char *domain,*destination;
     
     if(argc < 2){
         portNum = atoi(argv[2]);
@@ -22,30 +23,8 @@ int main(int argc, char** argv){
     else{
         portNum = 80;
     }
-    ok = strlen(argv[1]);
-    int i,separator;
-    for(i = 0; i < ok; i++){
-        if(argv[1][i] == '/'){
-            separator = i;
-            break;
-        }
-    }
-    char *domain,*destination;
-    domain = (char*)malloc(sizeof(char)*(i+1));
-    
-    if(i == ok){
-        strcpy(domain,argv[1]);
-        destination = (char*)malloc(sizeof(char)*2);
-        strcpy(destination,"/");
-    }
-    else{
-        strncpy(domain,argv[1],i);
-        destination = (char*)malloc(sizeof(char)*(ok-i+1));
-        int j = i,k;
-        for(k = 0; j < ok; j++, k++){
-            destination[k] = argv[1][j];
-        }
-    }
+
+    get_domain(argv[1], &domain, &destination);
     
     hostname_to_ip(domain, &serv_addr);
     
@@ -91,4 +70,37 @@ int hostname_to_ip(char *domain, struct sockaddr_in *_addr){
     free(ip);
     return 0;
     
+}
+
+//Separate the domain and file from the url
+void get_domain(char *address, char **domain, char **destination){
+    int length;
+    length = strlen(address);
+    char *dom, *dest;
+    int i,separator;
+    for(i = 0; i < length; i++){
+        if(address[i] == '/'){
+            separator = i;
+            break;
+        }
+    }
+    dom = (char*)malloc(sizeof(char)*(i+1));
+    printf("%d\n",i);
+    if(i == length){
+        strcpy(dom,address);
+        dest = (char*)malloc(sizeof(char)*2);
+        strcpy(dest,"/");
+    }
+    else{
+        strncpy(dom,address,i);
+        dest = (char*)malloc(sizeof(char)*(length-i+1));
+        int j = i,k;
+        for(k = 0; j < length; j++, k++){
+            dest[k] = address[j];
+        }
+        
+    }
+
+    *domain = dom;
+    *destination = dest;
 }
